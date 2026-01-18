@@ -1,6 +1,278 @@
-"scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "vercel-build": "next build"
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groupe des 22</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+body{margin:0;font-family:system-ui;background:#0f172a;color:#fff;font-size:18px}
+.hidden{display:none}
+header{padding:18px;background:#020617;display:flex;justify-content:space-between;align-items:center}
+button{cursor:pointer}
+.container{padding:20px}
+.card{background:#020617;border-radius:18px;padding:20px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.icon{background:#020617;border-radius:18px;padding:25px;text-align:center}
+.icon i{font-size:34px;color:#38bdf8;margin-bottom:10px}
+.main{width:100%;padding:15px;border:none;border-radius:14px;font-size:18px;font-weight:bold;background:#38bdf8;color:#020617}
+input{width:100%;padding:12px;border-radius:10px;border:none;margin:8px 0}
+.back{background:none;border:none;color:#38bdf8;margin-bottom:10px}
+.lang button{background:none;border:1px solid #38bdf8;color:#38bdf8;margin:0 3px;padding:5px 10px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<header>
+<h3>Groupe des 22</h3>
+<div>
+<button onclick="logout()" id="logoutBtn">خروج</button>
+</div>
+<div class="lang">
+<button onclick="setLang('ar')">AR</button>
+<button onclick="setLang('fr')">FR</button>
+<button onclick="setLang('en')">EN</button>
+</div>
+</header>
+
+<!-- LOGIN -->
+<div class="container" id="login">
+<div class="card">
+<h3 id="loginTitle">تسجيل الدخول</h3>
+<input id="u" placeholder="اسم المستخدم">
+<input id="p" type="password" placeholder="كلمة السر">
+<input id="ref" placeholder="كود إحالة (اختياري)">
+<button class="main" id="loginBtn" onclick="login()">دخول / تسجيل</button>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="container hidden" id="home">
+<div class="card">
+<h2 id="welcome"></h2>
+<p id="balText">رصيدك: <span id="balance">0 DA</span></p>
+<p id="lvlText">مستواك: <span id="pLevel">تجريبي</span></p>
+<p id="refText">أحالك تحتك: <span id="referrals">0</span></p>
+</div>
+
+<div class="grid">
+<div class="icon" onclick="openPage('tasks')"><i class="fa fa-list-check"></i><p id="tasksText">المهام</p></div>
+<div class="icon" onclick="openPage('withdraw')"><i class="fa fa-wallet"></i><p id="withdrawText">سحب</p></div>
+<div class="icon" onclick="openPage('levels')"><i class="fa fa-layer-group"></i><p id="levelsText">المستويات</p></div>
+<div class="icon" onclick="openPage('profile')"><i class="fa fa-user"></i><p id="profileText">ملفي</p></div>
+<div class="icon" onclick="openPage('about')"><i class="fa fa-circle-info"></i><p id="aboutText">حول المنصة</p></div>
+<div class="icon" onclick="openPage('support')"><i class="fa fa-headset"></i><p id="supportText">الدعم</p></div>
+</div>
+</div>
+
+<!-- TASK -->
+<div class="container hidden" id="tasks">
+<button class="back" onclick="home()">← <span id="backText">رجوع</span></button>
+<div class="card">
+<h3 id="taskTitle">المهمة اليومية</h3>
+<button class="main" id="doTaskBtn" onclick="doTask()">تنفيذ (+100 DA)</button>
+</div>
+</div>
+
+<!-- WITHDRAW -->
+<div class="container hidden" id="withdraw">
+<button class="back" onclick="home()">← <span id="backText2">رجوع</span></button>
+<div class="card">
+<h3 id="withdrawTitle">طلب سحب</h3>
+<input id="wAmount" type="number" placeholder="المبلغ">
+<button class="main" id="withdrawBtn" onclick="withdraw()">إرسال الطلب</button>
+</div>
+</div>
+
+<!-- LEVELS -->
+<div class="container hidden" id="levels">
+<button class="back" onclick="home()">← <span id="backText3">رجوع</span></button>
+<div id="levelList"></div>
+</div>
+
+<!-- PROFILE -->
+<div class="container hidden" id="profile">
+<button class="back" onclick="home()">← <span id="backText4">رجوع</span></button>
+<div class="card">
+<p><span id="userLabel">المستخدم</span>: <b id="pName"></b></p>
+<p><span id="levelLabel">المستوى</span>: <b id="pLvl"></b></p>
+<p><span id="refLabel">أحالك تحتك</span>: <b id="pRefs"></b></p>
+</div>
+</div>
+
+<!-- ABOUT -->
+<div class="container hidden" id="about">
+<button class="back" onclick="home()">← <span id="backText5">رجوع</span></button>
+<div class="card">
+<p id="aboutDesc">منصة مهام رقمية – Groupe des 22</p>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div class="container hidden" id="admin">
+<div class="card">
+<h3 id="adminTitle">لوحة الإدارة</h3>
+<input id="adminBal" type="number" placeholder="تعديل الرصيد">
+<button class="main" onclick="setBal()">حفظ</button>
+</div>
+</div>
+
+<script>
+const translations = {
+  ar:{
+    login:"تسجيل الدخول", loginBtn:"دخول / تسجيل",
+    welcome:"مرحبًا بك", bal:"رصيدك", lvl:"مستواك", refs:"أحالك تحتك",
+    tasks:"المهام", withdraw:"سحب", levels:"المستويات", profile:"ملفي", about:"حول المنصة", support:"الدعم",
+    back:"رجوع", taskTitle:"المهمة اليومية", doTask:"تنفيذ (+100 DA)", withdrawTitle:"طلب سحب",
+    user:"المستخدم", level:"المستوى", refer:"أحالك تحتك", aboutDesc:"منصة مهام رقمية – Groupe des 22"
+  },
+  fr:{
+    login:"Connexion", loginBtn:"Entrer / S'inscrire",
+    welcome:"Bienvenue", bal:"Solde", lvl:"Niveau", refs:"Vos filleuls",
+    tasks:"Tâches", withdraw:"Retrait", levels:"Niveaux", profile:"Mon profil", about:"À propos", support:"Support",
+    back:"Retour", taskTitle:"Tâche quotidienne", doTask:"Exécuter (+100 DA)", withdrawTitle:"Demande de retrait",
+    user:"Utilisateur", level:"Niveau", refer:"Vos filleuls", aboutDesc:"Plateforme de tâches numériques – Groupe des 22"
+  },
+  en:{
+    login:"Login", loginBtn:"Login / Register",
+    welcome:"Welcome", bal:"Balance", lvl:"Level", refs:"Referrals",
+    tasks:"Tasks", withdraw:"Withdraw", levels:"Levels", profile:"Profile", about:"About", support:"Support",
+    back:"Back", taskTitle:"Daily task", doTask:"Execute (+100 DA)", withdrawTitle:"Withdraw request",
+    user:"User", level:"Level", refer:"Referrals", aboutDesc:"Digital tasks platform – Groupe des 22"
+  }
+};
+
+function setLang(lang){
+  localStorage.setItem("lang",lang);
+  applyLang(lang);
 }
+
+function applyLang(lang){
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+
+  document.getElementById("loginTitle").innerText=translations[lang].login;
+  document.getElementById("loginBtn").innerText=translations[lang].loginBtn;
+  document.getElementById("welcome").innerText=translations[lang].welcome;
+  document.getElementById("balText").innerHTML=translations[lang].bal+": <span id='balance'>0 DA</span>";
+  document.getElementById("lvlText").innerHTML=translations[lang].lvl+": <span id='pLevel'>تجريبي</span>";
+  document.getElementById("refText").innerHTML=translations[lang].refs+": <span id='referrals'>0</span>";
+  document.getElementById("tasksText").innerText=translations[lang].tasks;
+  document.getElementById("withdrawText").innerText=translations[lang].withdraw;
+  document.getElementById("levelsText").innerText=translations[lang].levels;
+  document.getElementById("profileText").innerText=translations[lang].profile;
+  document.getElementById("aboutText").innerText=translations[lang].about;
+  document.getElementById("supportText").innerText=translations[lang].support;
+  document.getElementById("backText").innerText=translations[lang].back;
+  document.getElementById("backText2").innerText=translations[lang].back;
+  document.getElementById("backText3").innerText=translations[lang].back;
+  document.getElementById("backText4").innerText=translations[lang].back;
+  document.getElementById("backText5").innerText=translations[lang].back;
+  document.getElementById("taskTitle").innerText=translations[lang].taskTitle;
+  document.getElementById("doTaskBtn").innerText=translations[lang].doTask;
+  document.getElementById("withdrawTitle").innerText=translations[lang].withdrawTitle;
+  document.getElementById("userLabel").innerText=translations[lang].user;
+  document.getElementById("levelLabel").innerText=translations[lang].level;
+  document.getElementById("refLabel").innerText=translations[lang].refer;
+  document.getElementById("aboutDesc").innerText=translations[lang].aboutDesc;
+}
+
+applyLang(localStorage.getItem("lang")||"ar");
+
+// ===== المستخدم + المستويات + المهام =====
+let users=JSON.parse(localStorage.getItem("users")||"{}");
+let current=null;
+const ADMIN_PASS="2026meriwhite";
+const ADMIN_WHATS="213660624409";
+
+const levels=[
+{name:"تجريبي",deposit:0,daily:50},
+{name:"المستوى 1",deposit:2500,daily:100},
+{name:"المستوى 2",deposit:5200,daily:200},
+{name:"المستوى 3",deposit:20000,daily:500},
+{name:"المستوى 4",deposit:40000,daily:1000},
+];
+
+function login(){
+let u=document.getElementById("u").value.trim();
+let p=document.getElementById("p").value;
+let ref=document.getElementById("ref").value.trim();
+if(!u||!p)return alert("أدخل البيانات");
+
+if(!users[u]){
+users[u]={p,bal:0,lvl:0,refs:[],task:""};
+if(ref && users[ref]){users[ref].bal+=50;users[ref].refs.push(u);}
+}
+if(users[u].p!==p)return alert("كلمة السر خاطئة");
+current=u;
+localStorage.setItem("users",JSON.stringify(users));
+init();
+if(u.includes("/admin"))admin();
+}
+
+function init(){
+login.classList.add("hidden");
+document.getElementById("home").classList.remove("hidden");
+document.getElementById("userName").innerText=current;
+update();
+renderLevels();
+}
+
+function update(){
+document.getElementById("balance").innerText=users[current].bal+" DA";
+document.getElementById("pLevel").innerText=levels[users[current].lvl].name;
+document.getElementById("pName").innerText=current;
+document.getElementById("pRefs").innerText=users[current].refs.length;
+localStorage.setItem("users",JSON.stringify(users));
+}
+
+function logout(){location.reload();}
+function openPage(id){
+document.querySelectorAll(".container").forEach(d=>d.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+function home(){openPage("home");}
+
+function doTask(){
+let today=new Date().toDateString();
+if(users[current].task===today)return alert("تم اليوم");
+users[current].task=today;
+users[current].bal+=levels[users[current].lvl].daily;
+update();
+}
+
+function withdraw(){
+let a=document.getElementById("wAmount").value;
+if(a<=0)return;
+let msg=`⭐ طلب سحب\nالمستخدم: ${current}\nالمبلغ: ${a} DA`;
+window.open(`https://wa.me/${ADMIN_WHATS}?text=${encodeURIComponent(msg)}`);
+}
+
+function renderLevels(){
+let container=document.getElementById("levelList");
+container.innerHTML="";
+levels.forEach((lvl,i)=>{
+let btnText="تفعيل المستوى";
+container.innerHTML+=`<div class="card"><h3>${lvl.name}</h3><p>الإيداع: ${lvl.deposit} DA</p><p>الربح اليومي: ${lvl.daily} DA</p><button class="main" onclick="activateLevel(${i})">${btnText}</button></div>`;
+});
+}
+
+function activateLevel(idx){
+let lvl=levels[idx];
+let msg=`⭐ طلب تفعيل مستوى\nالمستخدم: ${current}\nالمستوى: ${lvl.name}`;
+window.open(`https://wa.me/${ADMIN_WHATS}?text=${encodeURIComponent(msg)}`);
+alert("تم فتح WhatsApp لإرسال طلب التفعيل للإدارة");
+}
+
+// ADMIN
+function admin(){
+let pass=prompt("كود الإدارة");
+if(pass===ADMIN_PASS)openPage("admin");
+}
+function setBal(){
+users[current].bal=Number(document.getElementById("adminBal").value);
+update();
+}
+</script>
+</body>
+</html>
